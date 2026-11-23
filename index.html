@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>خلاصه‌ساز آفلاین چت هوش مصنوعی</title>
+  <style>
+    :root {
+      --bg-card: rgba(15, 23, 42, 0.92);
+      --bg-input: rgba(9, 13, 22, 0.88);
+      --bg-surface: rgba(30, 41, 59, 0.78);
+      --bg-surface-hover: rgba(51, 65, 85, 0.92);
+      --border-subtle: rgba(148, 163, 184, 0.18);
+      --border-strong: rgba(148, 163, 184, 0.34);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #7dd3fc;
+      --accent-text: #082f49;
+      --success-bg: rgba(16, 185, 129, 0.14);
+      --success-border: rgba(16, 185, 129, 0.35);
+      --success-text: #6ee7b7;
+      --danger-bg: rgba(244, 63, 94, 0.14);
+      --danger-border: rgba(244, 63, 94, 0.35);
+      --danger-text: #fda4af;
+      --font-ui: 'YekanBakh', 'Yekan Bakh', 'IRANYekan', 'Yekan', 'Vazirmatn', Tahoma, system-ui, -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100dvh;
+    }
+
+    body {
+      font-family: var(--font-ui);
+      color: var(--text-main);
+      background-color: #090d16;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      position: relative;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* گرادینت نرم متحرک پس‌زمینه */
+    .ambient-bg {
+      position: fixed;
+      inset: -20%;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 20% 25%, rgba(14, 165, 233, 0.22), transparent 48%),
+        radial-gradient(circle at 80% 30%, rgba(99, 102, 241, 0.18), transparent 50%),
+        radial-gradient(circle at 50% 85%, rgba(20, 184, 166, 0.14), transparent 52%),
+        linear-gradient(135deg, #090d16 0%, #0f172a 50%, #0b1120 100%);
+      background-size: 160% 160%;
+      animation: softGradientShift 22s ease-in-out infinite alternate;
+      will-change: transform, background-position;
+    }
+
+    @keyframes softGradientShift {
+      0% {
+        background-position: 0% 0%;
+        transform: scale(1) translate3d(0, 0, 0);
+      }
+      50% {
+        background-position: 60% 45%;
+        transform: scale(1.04) translate3d(-1.5%, 1%, 0);
+      }
+      100% {
+        background-position: 100% 100%;
+        transform: scale(1.02) translate3d(1.5%, -1%, 0);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ambient-bg {
+        animation: none;
+      }
+    }
+
+    /* کانتینر وسط‌چین */
+    .card {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 720px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 26px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .subtitle {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .guide-text {
+      margin: 10px 0 0;
+      font-size: 13px;
+      line-height: 1.75;
+      color: #cbd5e1;
+    }
+
+    kbd {
+      font-family: Tahoma, sans-serif;
+      font-size: 11px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      color: var(--accent);
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    .section-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .input-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .input-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .field-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+
+    .field-label svg,
+    .btn svg {
+      flex-shrink: 0;
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      box-shadow: none;
+      transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease, opacity 0.16s ease;
+    }
+
+    button:focus,
+    button:focus-visible,
+    [role="radio"]:focus,
+    [role="radio"]:focus-visible,
+    textarea:focus,
+    textarea:focus-visible {
+      outline: none;
+      box-shadow: none;
+    }
+
+    .btn-paste {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.26);
+    }
+
+    .btn-paste:hover {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: rgba(56, 189, 248, 0.45);
+      color: var(--accent-hover);
+    }
+
+    .btn-clear {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #cbd5e1;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .btn-clear:hover:not(:disabled) {
+      background: var(--bg-surface-hover);
+      color: #ffffff;
+      border-color: var(--border-strong);
+    }
+
+    .btn-clear:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .btn-clear.is-deleted {
+      background: var(--success-bg);
+      border-color: var(--success-border);
+      color: var(--success-text);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    textarea {
+      width: 100%;
+      height: 165px;
+      resize: none;
+      overflow-y: auto;
+      background: var(--bg-input);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 14px;
+      font-family: inherit;
+      font-size: 13.5px;
+      line-height: 1.75;
+    }
+
+    textarea::placeholder {
+      color: #64748b;
+    }
+
+    textarea:hover {
+      border-color: var(--border-strong);
+    }
+
+    textarea:focus {
+      border-color: var(--accent);
+    }
+
+    /* انتخابگر سه‌حالته درصد */
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      padding: 6px;
+      border-radius: 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .ratio-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 8px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: transparent;
+      border: 1px solid transparent;
+    }
+
+    .ratio-btn:hover {
+      color: #e2e8f0;
+      background: rgba(30, 41, 59, 0.55);
+    }
+
+    .ratio-btn.active {
+      color: #ffffff;
+      font-weight: 700;
+      background: var(--bg-surface);
+      border-color: var(--border-strong);
+    }
+
+    .btn-primary {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 18px;
+      border-radius: 12px;
+      background: var(--accent);
+      color: var(--accent-text);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .alert {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 12.5px;
+    }
+
+    .alert.show {
+      display: flex;
+    }
+
+    .alert-success {
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+      color: var(--success-text);
+    }
+
+    .alert-error {
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+      color: var(--danger-text);
+    }
+
+    /* باکس خروجی با محدودیت حداکثر ارتفاع 480 پیکسل */
+    .result-card {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+      border-radius: 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      max-height: 480px;
+    }
+
+    .result-card.show {
+      display: flex;
+    }
+
+    .result-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #e2e8f0;
+      flex-shrink: 0;
+    }
+
+    .output-body {
+      white-space: pre-wrap;
+      font-size: 13px;
+      line-height: 1.8;
+      color: #e2e8f0;
+      transition: max-height 0.2s ease;
+    }
+
+    /* حالت جمع‌شده با شفافیت تدریجی به سمت پایین */
+    .output-body.collapsed {
+      max-height: 108px;
+      overflow: hidden;
+      -webkit-mask-image: linear-gradient(to bottom, #000 25%, rgba(0, 0, 0, 0.36) 72%, transparent 100%);
+      mask-image: linear-gradient(to bottom, #000 25%, rgba(0, 0, 0, 0.36) 72%, transparent 100%);
+    }
+
+    /* حالت گسترده محدود به ارتفاع کل باکس (حداکثر ~480px) */
+    .output-body.expanded {
+      max-height: 345px;
+      overflow-y: auto;
+      -webkit-mask-image: none;
+      mask-image: none;
+      padding-left: 6px;
+    }
+
+    /* نوار دکمه‌های زیر متن خلاصه شده */
+    .result-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-subtle);
+      flex-shrink: 0;
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #e2e8f0;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-surface-hover);
+      border-color: var(--border-strong);
+    }
+
+    .btn-copy {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--accent-text);
+      background: var(--accent);
+    }
+
+    .btn-copy:hover {
+      background: var(--accent-hover);
+    }
+
+    @media (max-width: 540px) {
+      body {
+        padding: 12px;
+      }
+      .card {
+        padding: 20px;
+        border-radius: 16px;
+      }
+      .segmented {
+        grid-template-columns: 1fr;
+      }
+      .result-footer {
+        flex-wrap: wrap;
+      }
+      .result-footer button {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-bg" aria-hidden="true"></div>
+
+  <main class="card">
+    <header>
+      <div class="header-top">
+        <div class="brand-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>
+          </svg>
+        </div>
+        <div>
+          <h1>خلاصه‌ساز آفلاین و هوشمند چت</h1>
+          <p class="subtitle">بدون نیاز به اینترنت، API یا فیلترشکن — لود آنی و پردازش محلی</p>
+        </div>
+      </div>
+      <p class="guide-text">
+        در صفحه چت <kbd>Ctrl+A</kbd> و <kbd>Ctrl+C</kbd> بزنید و متن را در باکس زیر پیست کنید تا خلاصه آماده انتقال به اکانت جدید ساخته شود.
+      </p>
+    </header>
+
+    <section class="section-group">
+      <div class="input-header">
+        <label for="inputText" class="field-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            <path d="M8 9h8"/><path d="M8 13h6"/>
+          </svg>
+          متن خام گفتگو
+        </label>
+
+        <div class="input-actions">
+          <button id="btnPaste" type="button" class="btn-paste" onclick="handlePasteClick()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+            </svg>
+            <span id="pasteLabel">پیست</span>
+          </button>
+
+          <button
+            id="btnClear"
+            type="button"
+            class="btn-clear"
+            disabled
+            onclick="handleDeleteClick()"
+            onmouseleave="handleDeleteMouseLeave()"
+          >
+            <span id="clearIconWrap" style="display: inline-flex; align-items: center;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+              </svg>
+            </span>
+            <span id="clearLabel">حذف</span>
+          </button>
+        </div>
+      </div>
+
+      <textarea
+        id="inputText"
+        oninput="syncClearButtonState()"
+        placeholder="کل متن چت را اینجا پیست (Paste) کنید..."
+      ></textarea>
+    </section>
+
+    <section class="section-group">
+      <span class="field-label">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);">
+          <line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/>
+          <line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/>
+          <line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/>
+        </svg>
+        سطح فشرده‌سازی خلاصه
+      </span>
+
+      <div id="ratioGroup" class="segmented" role="radiogroup">
+        <button
+          type="button"
+          role="radio"
+          aria-checked="false"
+          data-ratio="0.25"
+          class="ratio-btn"
+          onclick="selectRatio(this)"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/>
+            <line x1="14" x2="21" y1="10" y2="3"/><line x1="3" x2="10" y1="21" y2="14"/>
+          </svg>
+          <span>کوتاه (۲۵٪)</span>
+        </button>
+
+        <button
+          type="button"
+          role="radio"
+          aria-checked="true"
+          data-ratio="0.40"
+          class="ratio-btn active"
+          onclick="selectRatio(this)"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #34d399;">
+            <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
+            <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
+            <path d="M7 21h10"/><path d="M12 3v18"/>
+          </svg>
+          <span>متعادل (۴۰٪)</span>
+        </button>
+
+        <button
+          type="button"
+          role="radio"
+          aria-checked="false"
+          data-ratio="0.60"
+          class="ratio-btn"
+          onclick="selectRatio(this)"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/>
+            <path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>
+          </svg>
+          <span>جزئیات‌محور (۶۰٪)</span>
+        </button>
+      </div>
+
+      <button id="btnSummarize" type="button" class="btn-primary" onclick="summarizeOffline()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h2"/>
+          <path d="M17.8 11.8 19 13"/><path d="M15 9h.01"/><path d="M17.8 6.2 19 5"/>
+          <path d="m3 21 9-9"/><path d="M12.2 6.2 11 5"/>
+        </svg>
+        تولید خلاصه فوری
+      </button>
+    </section>
+
+    <div id="statsAlert" class="alert alert-success">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+        <circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>
+      </svg>
+      <span id="statsText"></span>
+    </div>
+
+    <div id="errorAlert" class="alert alert-error">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+        <circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>
+      </svg>
+      <span id="errorText"></span>
+    </div>
+
+    <section id="resultBox" class="result-card">
+      <span class="result-title">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);">
+          <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+        </svg>
+        خروجی آماده انتقال به چت جدید
+      </span>
+
+      <div id="outputText" class="output-body collapsed"></div>
+
+      <div class="result-footer">
+        <button id="btnToggleExpand" type="button" class="btn-secondary" onclick="toggleExpandOutput()">
+          <svg id="expandIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+          <span id="expandLabel">مشاهده بیشتر</span>
+        </button>
+
+        <button id="btnCopy" type="button" class="btn-copy" onclick="copyResult()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+          </svg>
+          <span id="copyLabel">کپی متن</span>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let currentRatio = 0.40;
+    let isDeletedState = false;
+    let isOutputExpanded = false;
+    let fullSummaryPrompt = '';
+
+    const TRASH_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
+    const CHECK_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+    const CHEVRON_DOWN = `<path d="m6 9 6 6 6-6"/>`;
+    const CHEVRON_UP = `<path d="m18 15-6-6-6 6"/>`;
+
+    function resetOutputExpandState() {
+      isOutputExpanded = false;
+      const outputEl = document.getElementById('outputText');
+      outputEl.classList.remove('expanded');
+      outputEl.classList.add('collapsed');
+      document.getElementById('expandLabel').innerText = 'مشاهده بیشتر';
+      document.getElementById('expandIcon').innerHTML = CHEVRON_DOWN;
+    }
+
+    function toggleExpandOutput() {
+      isOutputExpanded = !isOutputExpanded;
+      const outputEl = document.getElementById('outputText');
+      const label = document.getElementById('expandLabel');
+      const icon = document.getElementById('expandIcon');
+
+      if (isOutputExpanded) {
+        outputEl.classList.remove('collapsed');
+        outputEl.classList.add('expanded');
+        label.innerText = 'بستن';
+        icon.innerHTML = CHEVRON_UP;
+      } else {
+        outputEl.classList.remove('expanded');
+        outputEl.classList.add('collapsed');
+        label.innerText = 'مشاهده بیشتر';
+        icon.innerHTML = CHEVRON_DOWN;
+      }
+    }
+
+    function syncClearButtonState() {
+      const btn = document.getElementById('btnClear');
+      const hasText = document.getElementById('inputText').value.trim().length > 0;
+      if (isDeletedState) {
+        btn.disabled = false;
+        return;
+      }
+      btn.disabled = !hasText;
+    }
+
+    async function handlePasteClick() {
+      const inputEl = document.getElementById('inputText');
+      const pasteLabel = document.getElementById('pasteLabel');
+      document.getElementById('errorAlert').classList.remove('show');
+
+      try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          const clipText = await navigator.clipboard.readText();
+          if (clipText) {
+            inputEl.value = clipText;
+            syncClearButtonState();
+            pasteLabel.innerText = 'پیست شد';
+            setTimeout(() => { pasteLabel.innerText = 'پیست'; }, 1500);
+            return;
+          }
+        }
+      } catch (err) {
+        // در حالت file:// مرورگر کروم ممکن است پرمیشن readText را بلاک کند؛ فوکوس می‌کنیم تا با Ctrl+V سریع پیست شود
+      }
+
+      inputEl.focus();
+      document.execCommand('paste');
+      syncClearButtonState();
+      if (!inputEl.value.trim()) {
+        showError('مرورگر دسترسی مستقیم به کلیپ‌بورد را محدود کرده است؛ با Ctrl+V در باکس پیست کنید.');
+      }
+    }
+
+    function handleDeleteClick() {
+      const inputEl = document.getElementById('inputText');
+      if (!inputEl.value.trim() && !isDeletedState) return;
+
+      inputEl.value = '';
+      fullSummaryPrompt = '';
+      document.getElementById('resultBox').classList.remove('show');
+      document.getElementById('statsAlert').classList.remove('show');
+      document.getElementById('errorAlert').classList.remove('show');
+      resetOutputExpandState();
+
+      const btn = document.getElementById('btnClear');
+      isDeletedState = true;
+      btn.disabled = false;
+      btn.classList.add('is-deleted');
+      document.getElementById('clearLabel').innerText = 'حذف شد';
+      document.getElementById('clearIconWrap').innerHTML = CHECK_SVG;
+    }
+
+    function handleDeleteMouseLeave() {
+      if (!isDeletedState) return;
+
+      isDeletedState = false;
+      const btn = document.getElementById('btnClear');
+      btn.classList.remove('is-deleted');
+      document.getElementById('clearLabel').innerText = 'حذف';
+      document.getElementById('clearIconWrap').innerHTML = TRASH_SVG;
+      syncClearButtonState();
+    }
+
+    function selectRatio(selectedBtn) {
+      currentRatio = parseFloat(selectedBtn.dataset.ratio);
+      document.querySelectorAll('.ratio-btn').forEach(btn => {
+        const isSelected = btn === selectedBtn;
+        btn.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+        btn.classList.toggle('active', isSelected);
+      });
+    }
+
+    function showError(msg) {
+      document.getElementById('statsAlert').classList.remove('show');
+      document.getElementById('errorText').innerText = msg;
+      document.getElementById('errorAlert').classList.add('show');
+    }
+
+    function summarizeOffline() {
+      const rawText = document.getElementById('inputText').value.trim();
+      const resultBox = document.getElementById('resultBox');
+      const outputEl = document.getElementById('outputText');
+      const statsAlert = document.getElementById('statsAlert');
+      const errorAlert = document.getElementById('errorAlert');
+
+      errorAlert.classList.remove('show');
+
+      if (!rawText) {
+        showError('لطفاً ابتدا متن چت را در باکس بالا پیست کنید.');
+        return;
+      }
+
+      const junkWords = ['Copy code', 'Regenerate', 'Share', 'Grok 2', 'Grok 3', 'Grok 4', 'Think', 'DeepSearch', 'Attach', 'Send'];
+      let lines = rawText.split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 2 && !junkWords.includes(line));
+
+      lines = lines.filter((item, pos, arr) => pos === 0 || item !== arr[pos - 1]);
+
+      const wordFreq = {};
+      const stopWords = new Set(['است', 'هست', 'این', 'آن', 'را', 'به', 'از', 'در', 'با', 'برای', 'که', 'می', 'شود', 'کند', 'the', 'is', 'to', 'and', 'of', 'in', 'a', 'for']);
+
+      lines.forEach(line => {
+        const words = line.toLowerCase().replace(/[^\w\u0600-\u06FF\s]/g, '').split(/\s+/);
+        words.forEach(w => {
+          if (w.length > 2 && !stopWords.has(w)) {
+            wordFreq[w] = (wordFreq[w] || 0) + 1;
+          }
+        });
+      });
+
+      const scoredLines = lines.map((line, index) => {
+        let score = 0;
+        const words = line.toLowerCase().replace(/[^\w\u0600-\u06FF\s]/g, '').split(/\s+/);
+
+        words.forEach(w => {
+          if (wordFreq[w]) score += wordFreq[w];
+        });
+
+        score = score / Math.max(words.length, 1);
+
+        if (/[{}();=<>]|const |let |var |function |def |import |class /.test(line)) score += 15;
+        if (/^[-*•\d+\.]/.test(line)) score += 5;
+        if (index < 5 || index > lines.length - 8) score += 8;
+
+        return { line, index, score };
+      });
+
+      const targetCount = Math.max(5, Math.floor(scoredLines.length * currentRatio));
+      const selected = scoredLines
+        .sort((a, b) => b.score - a.score)
+        .slice(0, targetCount)
+        .sort((a, b) => a.index - b.index)
+        .map(item => item.line);
+
+      const summaryBody = selected.join('\n');
+      fullSummaryPrompt = `این خلاصه و بخش‌های کلیدی گفتگوی قبلی من است. لطفاً تمام این زمینه (Context)، کدها و نکات را به خاطر بسپار و با گفتن «آماده‌ام» اجازه بده گفتگو را از همین نقطه ادامه دهیم:\n\n---\n${summaryBody}`;
+
+      outputEl.innerText = fullSummaryPrompt;
+      resetOutputExpandState();
+      resultBox.classList.add('show');
+
+      const reduction = Math.round((1 - (summaryBody.length / rawText.length)) * 100);
+      document.getElementById('statsText').innerText = `انجام شد! حجم متن ${reduction > 0 ? reduction : 0}٪ فشرده‌تر شد (کاملاً آفلاین).`;
+      statsAlert.classList.add('show');
+    }
+
+    function copyResult() {
+      const textToCopy = fullSummaryPrompt || document.getElementById('outputText').innerText;
+      navigator.clipboard.writeText(textToCopy);
+      const label = document.getElementById('copyLabel');
+      label.innerText = 'کپی شد!';
+      setTimeout(() => {
+        label.innerText = 'کپی متن';
+      }, 2000);
+    }
+  </script>
+</body>
+</html>
